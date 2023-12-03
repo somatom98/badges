@@ -50,7 +50,7 @@ func (r *MockUserRepository) GetUsersByManagerID(ctx context.Context, managerID 
 	users := []domain.User{}
 
 	for _, u := range r.users {
-		if u.ManagerID == &managerID {
+		if u.ManagerID != nil && *u.ManagerID == managerID {
 			users = append(users, u)
 		}
 	}
