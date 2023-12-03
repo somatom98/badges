@@ -8,11 +8,13 @@ import (
 
 type EventService struct {
 	eventRepository domain.EventRepository
+	userRepository  domain.UserRepository
 }
 
-func NewEventService(eventRepository domain.EventRepository) *EventService {
+func NewEventService(eventRepository domain.EventRepository, userRepository domain.UserRepository) *EventService {
 	return &EventService{
 		eventRepository: eventRepository,
+		userRepository:  userRepository,
 	}
 }
 
@@ -23,7 +25,14 @@ func (s *EventService) GetEventsByUserID(ctx context.Context, uid string) ([]dom
 func (s *EventService) GetEventsByManagerID(ctx context.Context, managerID string) ([]domain.Event, error) {
 	uids := []string{}
 
-	// TODO get uids from manager ID
+	users, err := s.userRepository.GetUsersByManagerID(ctx, managerID)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, u := range users {
+		uids = append(uids, u.ID)
+	}
 
 	return s.eventRepository.GetEventsByIDs(ctx, uids...)
 }

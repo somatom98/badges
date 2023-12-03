@@ -20,6 +20,7 @@ var conf config.Config
 var router *chi.Mux
 
 var eventRepository domain.EventRepository
+var userRepository domain.UserRepository
 
 var eventService domain.EventService
 
@@ -35,7 +36,7 @@ func main() {
 
 	eventRepository = event.NewMockEventRepository()
 
-	eventService = event.NewEventService(eventRepository)
+	eventService = event.NewEventService(eventRepository, userRepository)
 
 	resolver := &graph.Resolver{
 		EventService: eventService,
