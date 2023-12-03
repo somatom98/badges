@@ -27,9 +27,9 @@ func (r *eventResolver) Date(ctx context.Context, obj *domain.Event) (string, er
 // CreateEvent is the resolver for the createEvent field.
 func (r *mutationResolver) CreateEvent(ctx context.Context, input model.NewEvent) (*domain.Event, error) {
 	event := domain.Event{
-		ID:  uuid.New().String(),
-		UID: input.User,
-		// Type: input.Type,
+		ID:   uuid.New().String(),
+		UID:  input.User,
+		Type: input.Type,
 		Date: time.Now().UTC(),
 	}
 
@@ -119,6 +119,20 @@ func (r *userResolver) Events(ctx context.Context, obj *model.User) ([]*domain.E
 	return obj.Events, nil
 }
 
+// Type is the resolver for the type field.
+func (r *newEventResolver) Type(ctx context.Context, obj *model.NewEvent, data string) error {
+	switch data {
+	case string(domain.EventTypeIn):
+		obj.Type = domain.EventTypeIn
+	case string(domain.EventTypeOut):
+		obj.Type = domain.EventTypeOut
+	default:
+		return fmt.Errorf("err_invalid_value")
+	}
+
+	return nil
+}
+
 // Event returns EventResolver implementation.
 func (r *Resolver) Event() EventResolver { return &eventResolver{r} }
 
@@ -134,8 +148,12 @@ func (r *Resolver) Subscription() SubscriptionResolver { return &subscriptionRes
 // User returns UserResolver implementation.
 func (r *Resolver) User() UserResolver { return &userResolver{r} }
 
+// NewEvent returns NewEventResolver implementation.
+func (r *Resolver) NewEvent() NewEventResolver { return &newEventResolver{r} }
+
 type eventResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type subscriptionResolver struct{ *Resolver }
 type userResolver struct{ *Resolver }
+type newEventResolver struct{ *Resolver }

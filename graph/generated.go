@@ -46,6 +46,7 @@ type ResolverRoot interface {
 	Query() QueryResolver
 	Subscription() SubscriptionResolver
 	User() UserResolver
+	NewEvent() NewEventResolver
 }
 
 type DirectiveRoot struct {
@@ -94,6 +95,10 @@ type SubscriptionResolver interface {
 }
 type UserResolver interface {
 	Events(ctx context.Context, obj *model.User) ([]*domain.Event, error)
+}
+
+type NewEventResolver interface {
+	Type(ctx context.Context, obj *model.NewEvent, data string) error
 }
 
 type executableSchema struct {
@@ -2922,7 +2927,9 @@ func (ec *executionContext) unmarshalInputNewEvent(ctx context.Context, obj inte
 			if err != nil {
 				return it, err
 			}
-			it.Type = data
+			if err = ec.resolvers.NewEvent().Type(ctx, &it, data); err != nil {
+				return it, err
+			}
 		}
 	}
 
