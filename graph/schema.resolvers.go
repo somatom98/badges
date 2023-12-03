@@ -44,7 +44,6 @@ func (r *queryResolver) Events(ctx context.Context, id *string) ([]*model.Event,
 
 // User is the resolver for the user field.
 func (r *queryResolver) User(ctx context.Context, id string) (*model.User, error) {
-
 	if r.users == nil {
 		r.users = []*model.User{
 			{
@@ -75,6 +74,33 @@ func (r *queryResolver) User(ctx context.Context, id string) (*model.User, error
 }
 
 // Events is the resolver for the events field.
+func (r *subscriptionResolver) Events(ctx context.Context, id *string) (<-chan *model.Event, error) {
+	ch := make(chan *model.Event)
+
+	go func() {
+		defer close(ch)
+
+		for {
+			time.Sleep(1 * time.Second)
+
+			event := &model.Event{
+				ID:   uuid.New().String(),
+				Type: "IN",
+				Date: time.Now().UTC().String(),
+			}
+			select {
+			case <-ctx.Done():
+				return
+			case ch <- event:
+				// Event sent
+			}
+		}
+	}()
+
+	return ch, nil
+}
+
+// Events is the resolver for the events field.
 func (r *userResolver) Events(ctx context.Context, obj *model.User) ([]*model.Event, error) {
 	return obj.Events, nil
 }
@@ -85,9 +111,13 @@ func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 // Query returns QueryResolver implementation.
 func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
+// Subscription returns SubscriptionResolver implementation.
+func (r *Resolver) Subscription() SubscriptionResolver { return &subscriptionResolver{r} }
+
 // User returns UserResolver implementation.
 func (r *Resolver) User() UserResolver { return &userResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+type subscriptionResolver struct{ *Resolver }
 type userResolver struct{ *Resolver }

@@ -23,3 +23,7 @@ input NewEvent {
 type Mutation {
   createEvent(input: NewEvent!): Event!
 }
+
+type Subscription {
+  events(id:ID): Event!
+}
