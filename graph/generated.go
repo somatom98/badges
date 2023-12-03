@@ -56,6 +56,7 @@ type ComplexityRoot struct {
 		Date func(childComplexity int) int
 		ID   func(childComplexity int) int
 		Type func(childComplexity int) int
+		UID  func(childComplexity int) int
 	}
 
 	Mutation struct {
@@ -63,7 +64,8 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Events func(childComplexity int, id *string) int
+		Events        func(childComplexity int, id string) int
+		ReportsEvents func(childComplexity int, mid string) int
 	}
 
 	Subscription struct {
@@ -79,7 +81,8 @@ type MutationResolver interface {
 	CreateEvent(ctx context.Context, input model.NewEvent) (*domain.Event, error)
 }
 type QueryResolver interface {
-	Events(ctx context.Context, id *string) ([]*domain.Event, error)
+	Events(ctx context.Context, id string) ([]*domain.Event, error)
+	ReportsEvents(ctx context.Context, mid string) ([]*domain.Event, error)
 }
 type SubscriptionResolver interface {
 	Events(ctx context.Context, id *string) (<-chan *domain.Event, error)
@@ -129,6 +132,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Event.Type(childComplexity), true
 
+	case "Event.uid":
+		if e.complexity.Event.UID == nil {
+			break
+		}
+
+		return e.complexity.Event.UID(childComplexity), true
+
 	case "Mutation.createEvent":
 		if e.complexity.Mutation.CreateEvent == nil {
 			break
@@ -151,7 +161,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.Events(childComplexity, args["id"].(*string)), true
+		return e.complexity.Query.Events(childComplexity, args["id"].(string)), true
+
+	case "Query.reportsEvents":
+		if e.complexity.Query.ReportsEvents == nil {
+			break
+		}
+
+		args, err := ec.field_Query_reportsEvents_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.ReportsEvents(childComplexity, args["mid"].(string)), true
 
 	case "Subscription.events":
 		if e.complexity.Subscription.Events == nil {
@@ -340,15 +362,30 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 func (ec *executionContext) field_Query_events_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *string
+	var arg0 string
 	if tmp, ok := rawArgs["id"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalOID2ᚖstring(ctx, tmp)
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
 	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_reportsEvents_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["mid"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("mid"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["mid"] = arg0
 	return args, nil
 }
 
@@ -437,6 +474,50 @@ func (ec *executionContext) _Event_id(ctx context.Context, field graphql.Collect
 }
 
 func (ec *executionContext) fieldContext_Event_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Event",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Event_uid(ctx context.Context, field graphql.CollectedField, obj *domain.Event) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Event_uid(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Event_uid(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Event",
 		Field:      field,
@@ -578,6 +659,8 @@ func (ec *executionContext) fieldContext_Mutation_createEvent(ctx context.Contex
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Event_id(ctx, field)
+			case "uid":
+				return ec.fieldContext_Event_uid(ctx, field)
 			case "type":
 				return ec.fieldContext_Event_type(ctx, field)
 			case "date":
@@ -614,7 +697,7 @@ func (ec *executionContext) _Query_events(ctx context.Context, field graphql.Col
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Events(rctx, fc.Args["id"].(*string))
+		return ec.resolvers.Query().Events(rctx, fc.Args["id"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -638,6 +721,8 @@ func (ec *executionContext) fieldContext_Query_events(ctx context.Context, field
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Event_id(ctx, field)
+			case "uid":
+				return ec.fieldContext_Event_uid(ctx, field)
 			case "type":
 				return ec.fieldContext_Event_type(ctx, field)
 			case "date":
@@ -654,6 +739,68 @@ func (ec *executionContext) fieldContext_Query_events(ctx context.Context, field
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_events_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_reportsEvents(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_reportsEvents(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().ReportsEvents(rctx, fc.Args["mid"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*domain.Event)
+	fc.Result = res
+	return ec.marshalOEvent2ᚕᚖgithubᚗcomᚋsomatom98ᚋbadgesᚋdomainᚐEventᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_reportsEvents(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Event_id(ctx, field)
+			case "uid":
+				return ec.fieldContext_Event_uid(ctx, field)
+			case "type":
+				return ec.fieldContext_Event_type(ctx, field)
+			case "date":
+				return ec.fieldContext_Event_date(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Event", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_reportsEvents_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -844,6 +991,8 @@ func (ec *executionContext) fieldContext_Subscription_events(ctx context.Context
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Event_id(ctx, field)
+			case "uid":
+				return ec.fieldContext_Event_uid(ctx, field)
 			case "type":
 				return ec.fieldContext_Event_type(ctx, field)
 			case "date":
@@ -2703,6 +2852,11 @@ func (ec *executionContext) _Event(ctx context.Context, sel ast.SelectionSet, ob
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "uid":
+			out.Values[i] = ec._Event_uid(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
 		case "type":
 			field := field
 
@@ -2876,6 +3030,25 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_events(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "reportsEvents":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_reportsEvents(ctx, field)
 				return res
 			}
 

@@ -1,11 +1,13 @@
 type Event {
   id: ID!
+  uid: ID!
   type: String!
   date: String!
 }
 
 type Query {
-  events(id:ID): [Event!]
+  events(id:ID!): [Event!]
+  reportsEvents(mid:ID!): [Event!]
 }
 
 input NewEvent {

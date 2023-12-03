@@ -38,12 +38,23 @@ func (r *mutationResolver) CreateEvent(ctx context.Context, input model.NewEvent
 }
 
 // Events is the resolver for the events field.
-func (r *queryResolver) Events(ctx context.Context, id *string) ([]*domain.Event, error) {
-	if id == nil {
-		return nil, fmt.Errorf("err_null_field")
+func (r *queryResolver) Events(ctx context.Context, id string) ([]*domain.Event, error) {
+	events, err := r.EventService.GetEventsByUserID(ctx, id)
+	if err != nil {
+		return nil, err
 	}
 
-	events, err := r.EventService.GetEventsByUserID(ctx, *id)
+	nEvents := []*domain.Event{}
+	for i, _ := range events {
+		nEvents = append(nEvents, &events[i])
+	}
+
+	return nEvents, nil
+}
+
+// ReportsEvents is the resolver for the reportsEvents field.
+func (r *queryResolver) ReportsEvents(ctx context.Context, mid string) ([]*domain.Event, error) {
+	events, err := r.EventService.GetEventsByManagerID(ctx, mid)
 	if err != nil {
 		return nil, err
 	}
