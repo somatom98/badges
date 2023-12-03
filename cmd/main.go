@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"net/http"
 	"time"
 
@@ -14,11 +15,13 @@ import (
 	"github.com/somatom98/badges/event"
 	"github.com/somatom98/badges/graph"
 	"github.com/somatom98/badges/user"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 var httpsSrv *http.Server
 var conf config.Config
 var router *chi.Mux
+var mongoDB *mongo.Database
 
 var eventRepository domain.EventRepository
 var userRepository domain.UserRepository
@@ -34,6 +37,14 @@ func main() {
 	}
 	log.Info().
 		Msg("Config loaded")
+
+	mongoDB, err = conf.GetMongoDb(context.Background())
+	if err != nil {
+		log.Fatal().
+			Err(err).
+			Msg("Failed to connect to MongoDB")
+	}
+	log.Info().Msg("MongoDB connected")
 
 	eventRepository = event.NewMockEventRepository()
 	userRepository = user.NewMockUserRepository()

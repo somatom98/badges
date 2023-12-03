@@ -1,14 +1,18 @@
 package config
 
 import (
+	"context"
 	"os"
 
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"gopkg.in/yaml.v2"
 )
 
 type Config struct {
-	Environment Environment `yaml:"env"`
-	JwtOptions  JwtOptions  `yaml:"jwt"`
+	Environment  Environment  `yaml:"env"`
+	JwtOptions   JwtOptions   `yaml:"jwt"`
+	MongoOptions MongoOptions `yaml:"mongo"`
 }
 
 type Environment string
@@ -21,6 +25,11 @@ const (
 type JwtOptions struct {
 	Secret   string `yaml:"secret"`
 	Lifetime int    `yaml:"lifetime"`
+}
+
+type MongoOptions struct {
+	ConnectionString string `yaml:"connectionString"`
+	Database         string `yaml:"database"`
 }
 
 func GetFromYaml() (*Config, error) {
@@ -41,4 +50,21 @@ func GetFromYaml() (*Config, error) {
 	}
 
 	return config, nil
+}
+
+func (config Config) GetMongoDb(ctx context.Context) (*mongo.Database, error) {
+	mongoOptions := options.Client().ApplyURI(config.MongoOptions.ConnectionString)
+	mongoOptions.TLSConfig.InsecureSkipVerify = true
+
+	mongoClient, err := mongo.Connect(ctx, mongoOptions)
+	if err != nil {
+		return nil, err
+	}
+
+	err = mongoClient.Ping(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return mongoClient.Database(config.MongoOptions.Database), nil
 }
