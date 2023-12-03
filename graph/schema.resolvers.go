@@ -10,15 +10,26 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/somatom98/badges/domain"
 	"github.com/somatom98/badges/graph/model"
 )
 
+// Type is the resolver for the type field.
+func (r *eventResolver) Type(ctx context.Context, obj *domain.Event) (string, error) {
+	return string(obj.Type), nil
+}
+
+// Date is the resolver for the date field.
+func (r *eventResolver) Date(ctx context.Context, obj *domain.Event) (string, error) {
+	return obj.Date.String(), nil
+}
+
 // CreateEvent is the resolver for the createEvent field.
-func (r *mutationResolver) CreateEvent(ctx context.Context, input model.NewEvent) (*model.Event, error) {
-	event := model.Event{
-		ID:   uuid.New().String(),
-		Type: input.Type,
-		Date: time.Now().UTC().String(),
+func (r *mutationResolver) CreateEvent(ctx context.Context, input model.NewEvent) (*domain.Event, error) {
+	event := domain.Event{
+		ID: uuid.New().String(),
+		// Type: input.Type,
+		Date: time.Now().UTC(),
 	}
 
 	for _, u := range r.users {
@@ -32,8 +43,8 @@ func (r *mutationResolver) CreateEvent(ctx context.Context, input model.NewEvent
 }
 
 // Events is the resolver for the events field.
-func (r *queryResolver) Events(ctx context.Context, id *string) ([]*model.Event, error) {
-	events := []*model.Event{}
+func (r *queryResolver) Events(ctx context.Context, id *string) ([]*domain.Event, error) {
+	events := []*domain.Event{}
 	for _, u := range r.users {
 		if id == nil || u.ID == *id {
 			events = append(events, u.Events...)
@@ -49,17 +60,17 @@ func (r *queryResolver) User(ctx context.Context, id string) (*model.User, error
 			{
 				ID:     "1",
 				Name:   "Tommaso",
-				Events: []*model.Event{},
+				Events: []*domain.Event{},
 			},
 			{
 				ID:     "2",
 				Name:   "Mario",
-				Events: []*model.Event{},
+				Events: []*domain.Event{},
 			},
 			{
 				ID:     "3",
 				Name:   "Luca",
-				Events: []*model.Event{},
+				Events: []*domain.Event{},
 			},
 		}
 	}
@@ -74,8 +85,8 @@ func (r *queryResolver) User(ctx context.Context, id string) (*model.User, error
 }
 
 // Events is the resolver for the events field.
-func (r *subscriptionResolver) Events(ctx context.Context, id *string) (<-chan *model.Event, error) {
-	ch := make(chan *model.Event)
+func (r *subscriptionResolver) Events(ctx context.Context, id *string) (<-chan *domain.Event, error) {
+	ch := make(chan *domain.Event)
 
 	go func() {
 		defer close(ch)
@@ -83,10 +94,10 @@ func (r *subscriptionResolver) Events(ctx context.Context, id *string) (<-chan *
 		for {
 			time.Sleep(1 * time.Second)
 
-			event := &model.Event{
+			event := &domain.Event{
 				ID:   uuid.New().String(),
-				Type: "IN",
-				Date: time.Now().UTC().String(),
+				Type: domain.EventTypeIn,
+				Date: time.Now().UTC(),
 			}
 			select {
 			case <-ctx.Done():
@@ -101,9 +112,12 @@ func (r *subscriptionResolver) Events(ctx context.Context, id *string) (<-chan *
 }
 
 // Events is the resolver for the events field.
-func (r *userResolver) Events(ctx context.Context, obj *model.User) ([]*model.Event, error) {
+func (r *userResolver) Events(ctx context.Context, obj *model.User) ([]*domain.Event, error) {
 	return obj.Events, nil
 }
+
+// Event returns EventResolver implementation.
+func (r *Resolver) Event() EventResolver { return &eventResolver{r} }
 
 // Mutation returns MutationResolver implementation.
 func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
@@ -117,6 +131,7 @@ func (r *Resolver) Subscription() SubscriptionResolver { return &subscriptionRes
 // User returns UserResolver implementation.
 func (r *Resolver) User() UserResolver { return &userResolver{r} }
 
+type eventResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type subscriptionResolver struct{ *Resolver }
