@@ -13,6 +13,7 @@ import (
 	"github.com/somatom98/badges/domain"
 	"github.com/somatom98/badges/event"
 	"github.com/somatom98/badges/graph"
+	"github.com/somatom98/badges/user"
 )
 
 var httpsSrv *http.Server
@@ -35,6 +36,7 @@ func main() {
 		Msg("Config loaded")
 
 	eventRepository = event.NewMockEventRepository()
+	userRepository = user.NewMockUserRepository()
 
 	eventService = event.NewEventService(eventRepository, userRepository)
 
