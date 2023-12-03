@@ -1,0 +1,4 @@
+env: dev
+jwt:
+  secret: secret
+  lifetime: 3600000000000
