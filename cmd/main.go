@@ -4,10 +4,13 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/rs/zerolog/log"
 	"github.com/somatom98/badges/config"
+	"github.com/somatom98/badges/graph"
 )
 
 var httpsSrv *http.Server
@@ -26,9 +29,9 @@ func main() {
 
 	router = chi.NewRouter()
 	router.Use(middleware.Timeout(60 * time.Second))
-	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("badges"))
-	})
+	router.Handle("/", playground.Handler("GraphQL playground", "/query"))
+	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{}}))
+	router.Handle("/query", srv)
 
 	if conf.Environment == config.EnvironmentProduction {
 		httpsSrv = makeHTTPServer()

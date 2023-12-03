@@ -1,0 +1,25 @@
+type Event {
+  id: ID!
+  type: String!
+  date: String!
+}
+
+type User {
+  id: ID!
+  name: String!
+  events: [Event!]
+}
+
+type Query {
+  events(id:ID): [Event!]
+  user(id:ID!): User
+}
+
+input NewEvent {
+  user: String!
+  type: String!
+}
+
+type Mutation {
+  createEvent(input: NewEvent!): Event!
+}
