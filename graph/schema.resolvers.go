@@ -49,42 +49,11 @@ func (r *queryResolver) Events(ctx context.Context, id *string) ([]*domain.Event
 	}
 
 	nEvents := []*domain.Event{}
-	for _, e := range events {
-		nEvents = append(nEvents, &e)
+	for i, _ := range events {
+		nEvents = append(nEvents, &events[i])
 	}
 
 	return nEvents, nil
-}
-
-// User is the resolver for the user field.
-func (r *queryResolver) User(ctx context.Context, id string) (*model.User, error) {
-	if r.users == nil {
-		r.users = []*model.User{
-			{
-				ID:     "1",
-				Name:   "Tommaso",
-				Events: []*domain.Event{},
-			},
-			{
-				ID:     "2",
-				Name:   "Mario",
-				Events: []*domain.Event{},
-			},
-			{
-				ID:     "3",
-				Name:   "Luca",
-				Events: []*domain.Event{},
-			},
-		}
-	}
-
-	for _, u := range r.users {
-		if u.ID == id {
-			return u, nil
-		}
-	}
-
-	return nil, nil
 }
 
 // Events is the resolver for the events field.
@@ -114,11 +83,6 @@ func (r *subscriptionResolver) Events(ctx context.Context, id *string) (<-chan *
 	return ch, nil
 }
 
-// Events is the resolver for the events field.
-func (r *userResolver) Events(ctx context.Context, obj *model.User) ([]*domain.Event, error) {
-	return obj.Events, nil
-}
-
 // Type is the resolver for the type field.
 func (r *newEventResolver) Type(ctx context.Context, obj *model.NewEvent, data string) error {
 	switch data {
@@ -145,9 +109,6 @@ func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 // Subscription returns SubscriptionResolver implementation.
 func (r *Resolver) Subscription() SubscriptionResolver { return &subscriptionResolver{r} }
 
-// User returns UserResolver implementation.
-func (r *Resolver) User() UserResolver { return &userResolver{r} }
-
 // NewEvent returns NewEventResolver implementation.
 func (r *Resolver) NewEvent() NewEventResolver { return &newEventResolver{r} }
 
@@ -155,5 +116,4 @@ type eventResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type subscriptionResolver struct{ *Resolver }
-type userResolver struct{ *Resolver }
 type newEventResolver struct{ *Resolver }
