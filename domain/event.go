@@ -24,3 +24,9 @@ type EventRepository interface {
 	GetEventsByIDs(ctx context.Context, uids ...string) ([]Event, error)
 	AddUserEvent(ctx context.Context, event Event) error
 }
+
+type EventService interface {
+	GetEventsByUserID(ctx context.Context, uid string) ([]Event, error)
+	GetEventsByManagerID(ctx context.Context, managerID string) ([]Event, error)
+	AddUserEvent(ctx context.Context, event Event) error
+}
