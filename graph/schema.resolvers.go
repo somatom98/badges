@@ -27,30 +27,33 @@ func (r *eventResolver) Date(ctx context.Context, obj *domain.Event) (string, er
 // CreateEvent is the resolver for the createEvent field.
 func (r *mutationResolver) CreateEvent(ctx context.Context, input model.NewEvent) (*domain.Event, error) {
 	event := domain.Event{
-		ID: uuid.New().String(),
+		ID:  uuid.New().String(),
+		UID: input.User,
 		// Type: input.Type,
 		Date: time.Now().UTC(),
 	}
 
-	for _, u := range r.users {
-		if u.ID == input.User {
-			u.Events = append(u.Events, &event)
-			return &event, nil
-		}
-	}
-
-	return &event, fmt.Errorf("err_user_notfound")
+	err := r.EventService.AddUserEvent(ctx, event)
+	return &event, err
 }
 
 // Events is the resolver for the events field.
 func (r *queryResolver) Events(ctx context.Context, id *string) ([]*domain.Event, error) {
-	events := []*domain.Event{}
-	for _, u := range r.users {
-		if id == nil || u.ID == *id {
-			events = append(events, u.Events...)
-		}
+	if id == nil {
+		return nil, fmt.Errorf("err_null_field")
 	}
-	return events, nil
+
+	events, err := r.EventService.GetEventsByUserID(ctx, *id)
+	if err != nil {
+		return nil, err
+	}
+
+	nEvents := []*domain.Event{}
+	for _, e := range events {
+		nEvents = append(nEvents, &e)
+	}
+
+	return nEvents, nil
 }
 
 // User is the resolver for the user field.
