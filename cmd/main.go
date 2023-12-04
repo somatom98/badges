@@ -47,7 +47,7 @@ func main() {
 	log.Info().Msg("MongoDB connected")
 
 	eventRepository = event.NewMongoEventRepository(mongoDB)
-	userRepository = user.NewMockUserRepository()
+	userRepository = user.NewMongoUserRepository(mongoDB)
 
 	eventService = event.NewEventService(eventRepository, userRepository)
 
