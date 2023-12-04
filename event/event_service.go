@@ -34,7 +34,7 @@ func (s *EventService) GetEventsByManagerID(ctx context.Context, managerID strin
 		uids = append(uids, u.ID)
 	}
 
-	return s.eventRepository.GetEventsByIDs(ctx, uids...)
+	return s.eventRepository.GetEventsByUserIDs(ctx, uids...)
 }
 
 func (s *EventService) AddUserEvent(ctx context.Context, event domain.Event) error {

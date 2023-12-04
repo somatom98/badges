@@ -57,7 +57,7 @@ func (r *MongoEventRepository) GetEventsByUserID(ctx context.Context, uid string
 	return events, nil
 }
 
-func (r *MongoEventRepository) GetEventsByIDs(ctx context.Context, uids ...string) ([]domain.Event, error) {
+func (r *MongoEventRepository) GetEventsByUserIDs(ctx context.Context, uids ...string) ([]domain.Event, error) {
 	events := make([]domain.Event, 0)
 
 	objectIDs := []primitive.ObjectID{}

@@ -21,7 +21,7 @@ const (
 
 type EventRepository interface {
 	GetEventsByUserID(ctx context.Context, uid string) ([]Event, error)
-	GetEventsByIDs(ctx context.Context, uids ...string) ([]Event, error)
+	GetEventsByUserIDs(ctx context.Context, uids ...string) ([]Event, error)
 	AddUserEvent(ctx context.Context, event Event) error
 }
 
