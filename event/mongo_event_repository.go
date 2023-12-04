@@ -60,10 +60,20 @@ func (r *MongoEventRepository) GetEventsByUserID(ctx context.Context, uid string
 func (r *MongoEventRepository) GetEventsByIDs(ctx context.Context, uids ...string) ([]domain.Event, error) {
 	events := make([]domain.Event, 0)
 
+	objectIDs := []primitive.ObjectID{}
+	for _, uid := range uids {
+		objectID, err := primitive.ObjectIDFromHex(uid)
+		if err != nil {
+			return events, err
+		}
+
+		objectIDs = append(objectIDs, objectID)
+	}
+
 	opts := options.Find().SetSort(bson.M{"ts": -1})
 	filter := bson.M{
-		"id": bson.M{
-			"$in": uids,
+		"uid": bson.M{
+			"$in": objectIDs,
 		},
 	}
 
