@@ -3,5 +3,5 @@ jwt:
   secret: secret
   lifetime: 3600000000000
 mongo: 
-  connectionString: mongodb+srv://usr:pwd@blingcluster.3p6rokc.mongodb.net/
-  database: education
+  connectionString: mongodb+srv://usr:pwd@cluster.3p6rokc.mongodb.net/
+  database: badges
