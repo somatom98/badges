@@ -30,3 +30,7 @@ type EventService interface {
 	GetEventsByManagerID(ctx context.Context, managerID string) ([]Event, error)
 	AddUserEvent(ctx context.Context, event Event) error
 }
+
+type EventKafkaConsumer interface {
+	Consume(ctx context.Context) (<-chan *Event, error)
+}
