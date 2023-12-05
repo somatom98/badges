@@ -31,6 +31,6 @@ type EventService interface {
 	AddUserEvent(ctx context.Context, event Event) error
 }
 
-type EventKafkaConsumer interface {
+type EventConsumer interface {
 	Consume(ctx context.Context) (<-chan *Event, error)
 }
