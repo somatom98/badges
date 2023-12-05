@@ -7,21 +7,25 @@ import (
 
 	"github.com/rs/zerolog/log"
 	"github.com/segmentio/kafka-go"
+	"github.com/somatom98/badges/config"
 	"github.com/somatom98/badges/domain"
 )
 
 type EventKafkaConsumer struct {
+	options config.KafkaOptions
 }
 
-func NewEventKafkaConsumer() *EventKafkaConsumer {
-	return &EventKafkaConsumer{}
+func NewEventKafkaConsumer(options config.KafkaOptions) *EventKafkaConsumer {
+	return &EventKafkaConsumer{
+		options: options,
+	}
 }
 
 func (c *EventKafkaConsumer) Consume(ctx context.Context) (<-chan *domain.Event, error) {
 	ch := make(chan *domain.Event)
 
 	r := kafka.NewReader(kafka.ReaderConfig{
-		Brokers:   []string{"localhost:9092"},
+		Brokers:   c.options.Brokers,
 		Topic:     "badge-events",
 		Partition: 0,
 		MaxBytes:  10e6,

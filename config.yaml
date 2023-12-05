@@ -5,3 +5,6 @@ jwt:
 mongo: 
   connectionString: mongodb+srv://usr:pwd@cluster.3p6rokc.mongodb.net/
   database: badges
+kafka:
+  brokers: 
+    - localhost:9092

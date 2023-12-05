@@ -51,7 +51,7 @@ func main() {
 
 	eventService = event.NewEventService(eventRepository, userRepository)
 
-	eventConsumer := event.NewEventKafkaConsumer()
+	eventConsumer := event.NewEventKafkaConsumer(conf.KafkaOptions)
 
 	resolver := &graph.Resolver{
 		EventService:  eventService,
