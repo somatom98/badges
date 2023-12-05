@@ -69,29 +69,7 @@ func (r *queryResolver) ReportsEvents(ctx context.Context, mid string) ([]*domai
 
 // Events is the resolver for the events field.
 func (r *subscriptionResolver) Events(ctx context.Context, id *string) (<-chan *domain.Event, error) {
-	ch := make(chan *domain.Event)
-
-	go func() {
-		defer close(ch)
-
-		for {
-			time.Sleep(1 * time.Second)
-
-			event := &domain.Event{
-				ID:   uuid.New().String(),
-				Type: domain.EventTypeIn,
-				Date: time.Now().UTC(),
-			}
-			select {
-			case <-ctx.Done():
-				return
-			case ch <- event:
-				// Event sent
-			}
-		}
-	}()
-
-	return ch, nil
+	return r.EventConsumer.Consume(ctx)
 }
 
 // Type is the resolver for the type field.

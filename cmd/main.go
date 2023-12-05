@@ -51,8 +51,11 @@ func main() {
 
 	eventService = event.NewEventService(eventRepository, userRepository)
 
+	eventConsumer := event.NewEventKafkaConsumer()
+
 	resolver := &graph.Resolver{
-		EventService: eventService,
+		EventService:  eventService,
+		EventConsumer: eventConsumer,
 	}
 
 	router = chi.NewRouter()
