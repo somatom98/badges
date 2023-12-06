@@ -32,5 +32,5 @@ type EventService interface {
 }
 
 type EventConsumer interface {
-	Consume(ctx context.Context) (<-chan *Event, error)
+	Consume(ctx context.Context, handler *func(context.Context, Event) error) (<-chan *Event, error)
 }

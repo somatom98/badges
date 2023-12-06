@@ -21,7 +21,7 @@ func NewEventKafkaConsumer(options config.KafkaOptions) *EventKafkaConsumer {
 	}
 }
 
-func (c *EventKafkaConsumer) Consume(ctx context.Context) (<-chan *domain.Event, error) {
+func (c *EventKafkaConsumer) Consume(ctx context.Context, handler *func(context.Context, domain.Event) error) (<-chan *domain.Event, error) {
 	ch := make(chan *domain.Event)
 
 	r := kafka.NewReader(kafka.ReaderConfig{
@@ -48,11 +48,19 @@ func (c *EventKafkaConsumer) Consume(ctx context.Context) (<-chan *domain.Event,
 				log.Error().
 					Err(err).
 					Msg("kafka deserialization error")
+				r.CommitMessages(ctx, m)
 				continue
 			}
 
-			ch <- &event
+			if handler != nil {
+				function := *handler
+				err = function(ctx, event)
+				if err != nil {
+					continue
+				}
+			}
 
+			ch <- &event
 			r.CommitMessages(ctx, m)
 		}
 	}()
