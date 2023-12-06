@@ -3,6 +3,7 @@ package event
 import (
 	"context"
 	"encoding/json"
+	"time"
 
 	"github.com/rs/zerolog/log"
 	"github.com/segmentio/kafka-go"
@@ -30,38 +31,43 @@ func (c *EventKafkaConsumer) Consume(ctx context.Context, handler *func(context.
 		MaxBytes:  10e6,
 	})
 
-	r.SetOffset(-1)
-
 	go func() {
 		defer r.Close()
+
+		var err error
+
 		for {
-			m, err := r.FetchMessage(ctx)
-			if err != nil {
-				break
-			}
+			m := kafka.Message{}
+			event := &domain.Event{}
+			if err == nil {
+				m, err = r.FetchMessage(ctx)
+				if err != nil {
+					break
+				}
 
-			var event domain.Event
-			err = json.Unmarshal(m.Value, &event)
-			if err != nil {
-				log.Error().
-					Err(err).
-					Msg("kafka deserialization error")
-				r.CommitMessages(ctx, m)
-				continue
-			}
-
-			if handler != nil {
-				function := *handler
-				err = function(ctx, event)
+				err = json.Unmarshal(m.Value, event)
 				if err != nil {
 					log.Error().
 						Err(err).
-						Msg("handler error")
+						Msg("kafka deserialization error")
+					r.CommitMessages(ctx, m)
 					continue
 				}
 			}
 
-			ch <- &event
+			if handler != nil {
+				function := *handler
+				err = function(ctx, *event)
+				if err != nil {
+					log.Error().
+						Err(err).
+						Msg("handler error")
+					time.Sleep(time.Second * 5)
+					continue
+				}
+			}
+
+			ch <- event
 			r.CommitMessages(ctx, m)
 		}
 	}()
