@@ -19,6 +19,8 @@ const (
 	EventTypeOut EventType = "OUT"
 )
 
+type EventsList map[int]map[int]map[int][]Event // [year][month][day]Event
+
 type EventRepository interface {
 	GetEventsByUserID(ctx context.Context, uid string) ([]Event, error)
 	GetEventsByUserIDs(ctx context.Context, uids ...string) ([]Event, error)
@@ -26,8 +28,8 @@ type EventRepository interface {
 }
 
 type EventService interface {
-	GetEventsByUserID(ctx context.Context, uid string) ([]Event, error)
-	GetEventsByManagerID(ctx context.Context, managerID string) ([]Event, error)
+	GetEventsByUserID(ctx context.Context, uid string) (EventsList, error)
+	GetEventsByManagerID(ctx context.Context, managerID string) (EventsList, error)
 	AddUserEvent(ctx context.Context, event Event) error
 	ListenToUserEvents(ctx context.Context) error
 }
