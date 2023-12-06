@@ -45,6 +45,7 @@ func (s *EventService) AddUserEvent(ctx context.Context, event domain.Event) err
 
 func (s *EventService) ListenToUserEvents(ctx context.Context) error {
 	handler := s.eventRepository.AddUserEvent
-	_, err := s.eventConsumer.Consume(ctx, &handler)
+	groupID := "event-consumer"
+	_, err := s.eventConsumer.Consume(ctx, &groupID, &handler)
 	return err
 }

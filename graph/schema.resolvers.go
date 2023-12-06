@@ -69,7 +69,7 @@ func (r *queryResolver) ReportsEvents(ctx context.Context, mid string) ([]*domai
 
 // Events is the resolver for the events field.
 func (r *subscriptionResolver) Events(ctx context.Context, id *string) (<-chan *domain.Event, error) {
-	return r.EventConsumer.Consume(ctx, nil)
+	return r.EventConsumer.Consume(ctx, nil, nil)
 }
 
 // Type is the resolver for the type field.

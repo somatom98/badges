@@ -21,15 +21,23 @@ func NewEventKafkaConsumer(options config.KafkaOptions) *EventKafkaConsumer {
 	}
 }
 
-func (c *EventKafkaConsumer) Consume(ctx context.Context, handler *func(context.Context, domain.Event) error) (<-chan *domain.Event, error) {
+func (c *EventKafkaConsumer) Consume(ctx context.Context, groupID *string, handler *func(context.Context, domain.Event) error) (<-chan *domain.Event, error) {
 	ch := make(chan *domain.Event)
 
-	r := kafka.NewReader(kafka.ReaderConfig{
+	conf := kafka.ReaderConfig{
 		Brokers:   c.options.Brokers,
 		Topic:     "badge-events",
 		Partition: 0,
 		MaxBytes:  10e6,
-	})
+	}
+
+	if groupID != nil {
+		conf.GroupID = *groupID
+	}
+
+	r := kafka.NewReader(conf)
+
+	r.SetOffset(-1)
 
 	go func() {
 		defer r.Close()
