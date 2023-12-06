@@ -13,6 +13,7 @@ type Config struct {
 	Environment  Environment  `yaml:"env"`
 	JwtOptions   JwtOptions   `yaml:"jwt"`
 	MongoOptions MongoOptions `yaml:"mongo"`
+	KafkaOptions KafkaOptions `yaml:"kafka"`
 }
 
 type Environment string
@@ -30,6 +31,11 @@ type JwtOptions struct {
 type MongoOptions struct {
 	ConnectionString string `yaml:"connectionString"`
 	Database         string `yaml:"database"`
+}
+
+type KafkaOptions struct {
+	Brokers    []string `yaml:"brokers"`
+	MaxRetries int      `yaml:"retries"`
 }
 
 func GetFromYaml() (*Config, error) {

@@ -13,4 +13,5 @@ import (
 type Resolver struct {
 	UserRepository domain.UserRepository
 	EventService   domain.EventService
+	EventConsumer  domain.EventConsumer
 }
