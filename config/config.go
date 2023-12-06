@@ -34,7 +34,8 @@ type MongoOptions struct {
 }
 
 type KafkaOptions struct {
-	Brokers []string `yaml:"brokers"`
+	Brokers    []string `yaml:"brokers"`
+	MaxRetries int      `yaml:"retries"`
 }
 
 func GetFromYaml() (*Config, error) {

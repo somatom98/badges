@@ -42,12 +42,21 @@ func (c *EventKafkaConsumer) Consume(ctx context.Context, groupID *string, handl
 	go func() {
 		defer r.Close()
 
+		m := kafka.Message{}
 		var err error
+		retries := 0
 
 		for {
-			m := kafka.Message{}
 			event := &domain.Event{}
+
+			if retries >= c.options.MaxRetries {
+				r.CommitMessages(ctx, m)
+				err = nil
+			}
+
 			if err == nil {
+				retries = 0
+
 				m, err = r.FetchMessage(ctx)
 				if err != nil {
 					break
@@ -70,7 +79,8 @@ func (c *EventKafkaConsumer) Consume(ctx context.Context, groupID *string, handl
 					log.Error().
 						Err(err).
 						Msg("handler error")
-					time.Sleep(time.Second * 5)
+					retries += 1
+					time.Sleep(time.Second * 1)
 					continue
 				}
 			}
