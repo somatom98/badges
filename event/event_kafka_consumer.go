@@ -3,7 +3,6 @@ package event
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	"github.com/rs/zerolog/log"
 	"github.com/segmentio/kafka-go"
@@ -40,7 +39,6 @@ func (c *EventKafkaConsumer) Consume(ctx context.Context, handler *func(context.
 			if err != nil {
 				break
 			}
-			fmt.Printf("message at offset %d: %s = %s\n", m.Offset, string(m.Key), string(m.Value))
 
 			var event domain.Event
 			err = json.Unmarshal(m.Value, &event)
@@ -56,6 +54,9 @@ func (c *EventKafkaConsumer) Consume(ctx context.Context, handler *func(context.
 				function := *handler
 				err = function(ctx, event)
 				if err != nil {
+					log.Error().
+						Err(err).
+						Msg("handler error")
 					continue
 				}
 			}
