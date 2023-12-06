@@ -41,6 +41,7 @@ func (c *EventKafkaConsumer) Consume(ctx context.Context, groupID *string, handl
 
 	go func() {
 		defer r.Close()
+		defer close(ch)
 
 		m := kafka.Message{}
 		var err error
@@ -85,7 +86,9 @@ func (c *EventKafkaConsumer) Consume(ctx context.Context, groupID *string, handl
 				}
 			}
 
-			ch <- event
+			if groupID == nil {
+				ch <- event
+			}
 			r.CommitMessages(ctx, m)
 		}
 	}()
