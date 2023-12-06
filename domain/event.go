@@ -29,6 +29,7 @@ type EventService interface {
 	GetEventsByUserID(ctx context.Context, uid string) ([]Event, error)
 	GetEventsByManagerID(ctx context.Context, managerID string) ([]Event, error)
 	AddUserEvent(ctx context.Context, event Event) error
+	ListenToUserEvents(ctx context.Context) error
 }
 
 type EventConsumer interface {

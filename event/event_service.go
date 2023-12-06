@@ -9,12 +9,14 @@ import (
 type EventService struct {
 	eventRepository domain.EventRepository
 	userRepository  domain.UserRepository
+	eventConsumer   domain.EventConsumer
 }
 
-func NewEventService(eventRepository domain.EventRepository, userRepository domain.UserRepository) *EventService {
+func NewEventService(eventRepository domain.EventRepository, userRepository domain.UserRepository, eventConsumer domain.EventConsumer) *EventService {
 	return &EventService{
 		eventRepository: eventRepository,
 		userRepository:  userRepository,
+		eventConsumer:   eventConsumer,
 	}
 }
 
@@ -39,4 +41,10 @@ func (s *EventService) GetEventsByManagerID(ctx context.Context, managerID strin
 
 func (s *EventService) AddUserEvent(ctx context.Context, event domain.Event) error {
 	return s.eventRepository.AddUserEvent(ctx, event)
+}
+
+func (s *EventService) ListenToUserEvents(ctx context.Context) error {
+	handler := s.eventRepository.AddUserEvent
+	_, err := s.eventConsumer.Consume(ctx, &handler)
+	return err
 }

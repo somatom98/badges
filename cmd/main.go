@@ -26,6 +26,8 @@ var mongoDB *mongo.Database
 var eventRepository domain.EventRepository
 var userRepository domain.UserRepository
 
+var eventConsumer domain.EventConsumer
+
 var eventService domain.EventService
 
 func main() {
@@ -49,9 +51,16 @@ func main() {
 	eventRepository = event.NewMongoEventRepository(mongoDB)
 	userRepository = user.NewMongoUserRepository(mongoDB)
 
-	eventService = event.NewEventService(eventRepository, userRepository)
+	eventConsumer = event.NewEventKafkaConsumer(conf.KafkaOptions)
 
-	eventConsumer := event.NewEventKafkaConsumer(conf.KafkaOptions)
+	eventService = event.NewEventService(eventRepository, userRepository, eventConsumer)
+
+	err = eventService.ListenToUserEvents(context.Background())
+	if err != nil {
+		log.Fatal().
+			Err(err).
+			Msg("Event consumer failed")
+	}
 
 	resolver := &graph.Resolver{
 		EventService:  eventService,
