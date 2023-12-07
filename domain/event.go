@@ -19,7 +19,24 @@ const (
 	EventTypeOut EventType = "OUT"
 )
 
-type EventsList map[int]map[int]map[int][]Event // [year][month][day]Event
+type DayGroup struct {
+	Day    int     `json:"day"`
+	Events []Event `json:"events"`
+}
+
+type MonthGroup struct {
+	Month int        `json:"month"`
+	Days  []DayGroup `json:"days"`
+}
+
+type YearGroup struct {
+	Year   int          `json:"year"`
+	Months []MonthGroup `json:"months"`
+}
+
+type EventsList struct {
+	Years []YearGroup `json:"years"`
+}
 
 type EventRepository interface {
 	GetEventsByUserID(ctx context.Context, uid string) ([]Event, error)
