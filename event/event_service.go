@@ -20,23 +20,33 @@ func NewEventService(eventRepository domain.EventRepository, userRepository doma
 	}
 }
 
-func (s *EventService) GetEventsByUserID(ctx context.Context, uid string) ([]domain.Event, error) {
-	return s.eventRepository.GetEventsByUserID(ctx, uid)
+func (s *EventService) GetEventsByUserID(ctx context.Context, uid string) (domain.EventsList, error) {
+	events, err := s.eventRepository.GetEventsByUserID(ctx, uid)
+	if err != nil {
+		return domain.EventsList{}, err
+	}
+
+	return domain.NewEventsList(events), nil
 }
 
-func (s *EventService) GetEventsByManagerID(ctx context.Context, managerID string) ([]domain.Event, error) {
+func (s *EventService) GetEventsByManagerID(ctx context.Context, managerID string) (domain.EventsList, error) {
 	uids := []string{}
 
 	users, err := s.userRepository.GetUsersByManagerID(ctx, managerID)
 	if err != nil {
-		return nil, err
+		return domain.EventsList{}, err
 	}
 
 	for _, u := range users {
 		uids = append(uids, u.ID)
 	}
 
-	return s.eventRepository.GetEventsByUserIDs(ctx, uids...)
+	events, err := s.eventRepository.GetEventsByUserIDs(ctx, uids...)
+	if err != nil {
+		return domain.EventsList{}, err
+	}
+
+	return domain.NewEventsList(events), nil
 }
 
 func (s *EventService) AddUserEvent(ctx context.Context, event domain.Event) error {

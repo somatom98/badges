@@ -52,11 +52,25 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	DayGroup struct {
+		Day    func(childComplexity int) int
+		Events func(childComplexity int) int
+	}
+
 	Event struct {
 		Date func(childComplexity int) int
 		ID   func(childComplexity int) int
 		Type func(childComplexity int) int
 		UID  func(childComplexity int) int
+	}
+
+	EventsList struct {
+		Years func(childComplexity int) int
+	}
+
+	MonthGroup struct {
+		Days  func(childComplexity int) int
+		Month func(childComplexity int) int
 	}
 
 	Mutation struct {
@@ -71,6 +85,11 @@ type ComplexityRoot struct {
 	Subscription struct {
 		Events func(childComplexity int, id *string) int
 	}
+
+	YearGroup struct {
+		Months func(childComplexity int) int
+		Year   func(childComplexity int) int
+	}
 }
 
 type EventResolver interface {
@@ -81,8 +100,8 @@ type MutationResolver interface {
 	CreateEvent(ctx context.Context, input model.NewEvent) (*domain.Event, error)
 }
 type QueryResolver interface {
-	Events(ctx context.Context, id string) ([]*domain.Event, error)
-	ReportsEvents(ctx context.Context, mid string) ([]*domain.Event, error)
+	Events(ctx context.Context, id string) (*domain.EventsList, error)
+	ReportsEvents(ctx context.Context, mid string) (*domain.EventsList, error)
 }
 type SubscriptionResolver interface {
 	Events(ctx context.Context, id *string) (<-chan *domain.Event, error)
@@ -111,6 +130,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	_ = ec
 	switch typeName + "." + field {
 
+	case "DayGroup.day":
+		if e.complexity.DayGroup.Day == nil {
+			break
+		}
+
+		return e.complexity.DayGroup.Day(childComplexity), true
+
+	case "DayGroup.events":
+		if e.complexity.DayGroup.Events == nil {
+			break
+		}
+
+		return e.complexity.DayGroup.Events(childComplexity), true
+
 	case "Event.date":
 		if e.complexity.Event.Date == nil {
 			break
@@ -138,6 +171,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Event.UID(childComplexity), true
+
+	case "EventsList.years":
+		if e.complexity.EventsList.Years == nil {
+			break
+		}
+
+		return e.complexity.EventsList.Years(childComplexity), true
+
+	case "MonthGroup.days":
+		if e.complexity.MonthGroup.Days == nil {
+			break
+		}
+
+		return e.complexity.MonthGroup.Days(childComplexity), true
+
+	case "MonthGroup.month":
+		if e.complexity.MonthGroup.Month == nil {
+			break
+		}
+
+		return e.complexity.MonthGroup.Month(childComplexity), true
 
 	case "Mutation.createEvent":
 		if e.complexity.Mutation.CreateEvent == nil {
@@ -186,6 +240,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Subscription.Events(childComplexity, args["id"].(*string)), true
+
+	case "YearGroup.months":
+		if e.complexity.YearGroup.Months == nil {
+			break
+		}
+
+		return e.complexity.YearGroup.Months(childComplexity), true
+
+	case "YearGroup.year":
+		if e.complexity.YearGroup.Year == nil {
+			break
+		}
+
+		return e.complexity.YearGroup.Year(childComplexity), true
 
 	}
 	return 0, false
@@ -442,6 +510,101 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 
 // region    **************************** field.gotpl *****************************
 
+func (ec *executionContext) _DayGroup_day(ctx context.Context, field graphql.CollectedField, obj *domain.DayGroup) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DayGroup_day(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Day, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DayGroup_day(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DayGroup",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DayGroup_events(ctx context.Context, field graphql.CollectedField, obj *domain.DayGroup) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DayGroup_events(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Events, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]domain.Event)
+	fc.Result = res
+	return ec.marshalOEvent2ᚕgithubᚗcomᚋsomatom98ᚋbadgesᚋdomainᚐEventᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DayGroup_events(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DayGroup",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Event_id(ctx, field)
+			case "uid":
+				return ec.fieldContext_Event_uid(ctx, field)
+			case "type":
+				return ec.fieldContext_Event_type(ctx, field)
+			case "date":
+				return ec.fieldContext_Event_date(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Event", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Event_id(ctx context.Context, field graphql.CollectedField, obj *domain.Event) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Event_id(ctx, field)
 	if err != nil {
@@ -618,6 +781,144 @@ func (ec *executionContext) fieldContext_Event_date(ctx context.Context, field g
 	return fc, nil
 }
 
+func (ec *executionContext) _EventsList_years(ctx context.Context, field graphql.CollectedField, obj *domain.EventsList) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_EventsList_years(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Years, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]domain.YearGroup)
+	fc.Result = res
+	return ec.marshalOYearGroup2ᚕgithubᚗcomᚋsomatom98ᚋbadgesᚋdomainᚐYearGroupᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_EventsList_years(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "EventsList",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "year":
+				return ec.fieldContext_YearGroup_year(ctx, field)
+			case "months":
+				return ec.fieldContext_YearGroup_months(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type YearGroup", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MonthGroup_month(ctx context.Context, field graphql.CollectedField, obj *domain.MonthGroup) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MonthGroup_month(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Month, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MonthGroup_month(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MonthGroup",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MonthGroup_days(ctx context.Context, field graphql.CollectedField, obj *domain.MonthGroup) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MonthGroup_days(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Days, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]domain.DayGroup)
+	fc.Result = res
+	return ec.marshalODayGroup2ᚕgithubᚗcomᚋsomatom98ᚋbadgesᚋdomainᚐDayGroupᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MonthGroup_days(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MonthGroup",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "day":
+				return ec.fieldContext_DayGroup_day(ctx, field)
+			case "events":
+				return ec.fieldContext_DayGroup_events(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type DayGroup", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_createEvent(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_createEvent(ctx, field)
 	if err != nil {
@@ -704,11 +1005,14 @@ func (ec *executionContext) _Query_events(ctx context.Context, field graphql.Col
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.([]*domain.Event)
+	res := resTmp.(*domain.EventsList)
 	fc.Result = res
-	return ec.marshalOEvent2ᚕᚖgithubᚗcomᚋsomatom98ᚋbadgesᚋdomainᚐEventᚄ(ctx, field.Selections, res)
+	return ec.marshalNEventsList2ᚖgithubᚗcomᚋsomatom98ᚋbadgesᚋdomainᚐEventsList(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_events(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -719,16 +1023,10 @@ func (ec *executionContext) fieldContext_Query_events(ctx context.Context, field
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "id":
-				return ec.fieldContext_Event_id(ctx, field)
-			case "uid":
-				return ec.fieldContext_Event_uid(ctx, field)
-			case "type":
-				return ec.fieldContext_Event_type(ctx, field)
-			case "date":
-				return ec.fieldContext_Event_date(ctx, field)
+			case "years":
+				return ec.fieldContext_EventsList_years(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Event", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type EventsList", field.Name)
 		},
 	}
 	defer func() {
@@ -766,11 +1064,14 @@ func (ec *executionContext) _Query_reportsEvents(ctx context.Context, field grap
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.([]*domain.Event)
+	res := resTmp.(*domain.EventsList)
 	fc.Result = res
-	return ec.marshalOEvent2ᚕᚖgithubᚗcomᚋsomatom98ᚋbadgesᚋdomainᚐEventᚄ(ctx, field.Selections, res)
+	return ec.marshalNEventsList2ᚖgithubᚗcomᚋsomatom98ᚋbadgesᚋdomainᚐEventsList(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_reportsEvents(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -781,16 +1082,10 @@ func (ec *executionContext) fieldContext_Query_reportsEvents(ctx context.Context
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "id":
-				return ec.fieldContext_Event_id(ctx, field)
-			case "uid":
-				return ec.fieldContext_Event_uid(ctx, field)
-			case "type":
-				return ec.fieldContext_Event_type(ctx, field)
-			case "date":
-				return ec.fieldContext_Event_date(ctx, field)
+			case "years":
+				return ec.fieldContext_EventsList_years(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Event", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type EventsList", field.Name)
 		},
 	}
 	defer func() {
@@ -1011,6 +1306,97 @@ func (ec *executionContext) fieldContext_Subscription_events(ctx context.Context
 	if fc.Args, err = ec.field_Subscription_events_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _YearGroup_year(ctx context.Context, field graphql.CollectedField, obj *domain.YearGroup) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_YearGroup_year(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Year, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_YearGroup_year(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "YearGroup",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _YearGroup_months(ctx context.Context, field graphql.CollectedField, obj *domain.YearGroup) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_YearGroup_months(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Months, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]domain.MonthGroup)
+	fc.Result = res
+	return ec.marshalOMonthGroup2ᚕgithubᚗcomᚋsomatom98ᚋbadgesᚋdomainᚐMonthGroupᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_YearGroup_months(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "YearGroup",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "month":
+				return ec.fieldContext_MonthGroup_month(ctx, field)
+			case "days":
+				return ec.fieldContext_MonthGroup_days(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type MonthGroup", field.Name)
+		},
 	}
 	return fc, nil
 }
@@ -2836,6 +3222,47 @@ func (ec *executionContext) unmarshalInputNewEvent(ctx context.Context, obj inte
 
 // region    **************************** object.gotpl ****************************
 
+var dayGroupImplementors = []string{"DayGroup"}
+
+func (ec *executionContext) _DayGroup(ctx context.Context, sel ast.SelectionSet, obj *domain.DayGroup) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, dayGroupImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("DayGroup")
+		case "day":
+			out.Values[i] = ec._DayGroup_day(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "events":
+			out.Values[i] = ec._DayGroup_events(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var eventImplementors = []string{"Event"}
 
 func (ec *executionContext) _Event(ctx context.Context, sel ast.SelectionSet, obj *domain.Event) graphql.Marshaler {
@@ -2952,6 +3379,83 @@ func (ec *executionContext) _Event(ctx context.Context, sel ast.SelectionSet, ob
 	return out
 }
 
+var eventsListImplementors = []string{"EventsList"}
+
+func (ec *executionContext) _EventsList(ctx context.Context, sel ast.SelectionSet, obj *domain.EventsList) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, eventsListImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("EventsList")
+		case "years":
+			out.Values[i] = ec._EventsList_years(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var monthGroupImplementors = []string{"MonthGroup"}
+
+func (ec *executionContext) _MonthGroup(ctx context.Context, sel ast.SelectionSet, obj *domain.MonthGroup) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, monthGroupImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("MonthGroup")
+		case "month":
+			out.Values[i] = ec._MonthGroup_month(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "days":
+			out.Values[i] = ec._MonthGroup_days(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var mutationImplementors = []string{"Mutation"}
 
 func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -3030,6 +3534,9 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_events(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
 				return res
 			}
 
@@ -3049,6 +3556,9 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_reportsEvents(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
 				return res
 			}
 
@@ -3107,6 +3617,47 @@ func (ec *executionContext) _Subscription(ctx context.Context, sel ast.Selection
 	default:
 		panic("unknown field " + strconv.Quote(fields[0].Name))
 	}
+}
+
+var yearGroupImplementors = []string{"YearGroup"}
+
+func (ec *executionContext) _YearGroup(ctx context.Context, sel ast.SelectionSet, obj *domain.YearGroup) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, yearGroupImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("YearGroup")
+		case "year":
+			out.Values[i] = ec._YearGroup_year(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "months":
+			out.Values[i] = ec._YearGroup_months(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
 }
 
 var __DirectiveImplementors = []string{"__Directive"}
@@ -3450,6 +4001,10 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
+func (ec *executionContext) marshalNDayGroup2githubᚗcomᚋsomatom98ᚋbadgesᚋdomainᚐDayGroup(ctx context.Context, sel ast.SelectionSet, v domain.DayGroup) graphql.Marshaler {
+	return ec._DayGroup(ctx, sel, &v)
+}
+
 func (ec *executionContext) marshalNEvent2githubᚗcomᚋsomatom98ᚋbadgesᚋdomainᚐEvent(ctx context.Context, sel ast.SelectionSet, v domain.Event) graphql.Marshaler {
 	return ec._Event(ctx, sel, &v)
 }
@@ -3462,6 +4017,20 @@ func (ec *executionContext) marshalNEvent2ᚖgithubᚗcomᚋsomatom98ᚋbadges�
 		return graphql.Null
 	}
 	return ec._Event(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNEventsList2githubᚗcomᚋsomatom98ᚋbadgesᚋdomainᚐEventsList(ctx context.Context, sel ast.SelectionSet, v domain.EventsList) graphql.Marshaler {
+	return ec._EventsList(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNEventsList2ᚖgithubᚗcomᚋsomatom98ᚋbadgesᚋdomainᚐEventsList(ctx context.Context, sel ast.SelectionSet, v *domain.EventsList) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._EventsList(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface{}) (string, error) {
@@ -3477,6 +4046,25 @@ func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.Selec
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
+	res, err := graphql.UnmarshalInt(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
+	res := graphql.MarshalInt(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
+func (ec *executionContext) marshalNMonthGroup2githubᚗcomᚋsomatom98ᚋbadgesᚋdomainᚐMonthGroup(ctx context.Context, sel ast.SelectionSet, v domain.MonthGroup) graphql.Marshaler {
+	return ec._MonthGroup(ctx, sel, &v)
 }
 
 func (ec *executionContext) unmarshalNNewEvent2githubᚗcomᚋsomatom98ᚋbadgesᚋgraphᚋmodelᚐNewEvent(ctx context.Context, v interface{}) (model.NewEvent, error) {
@@ -3497,6 +4085,10 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNYearGroup2githubᚗcomᚋsomatom98ᚋbadgesᚋdomainᚐYearGroup(ctx context.Context, sel ast.SelectionSet, v domain.YearGroup) graphql.Marshaler {
+	return ec._YearGroup(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {
@@ -3778,7 +4370,7 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
-func (ec *executionContext) marshalOEvent2ᚕᚖgithubᚗcomᚋsomatom98ᚋbadgesᚋdomainᚐEventᚄ(ctx context.Context, sel ast.SelectionSet, v []*domain.Event) graphql.Marshaler {
+func (ec *executionContext) marshalODayGroup2ᚕgithubᚗcomᚋsomatom98ᚋbadgesᚋdomainᚐDayGroupᚄ(ctx context.Context, sel ast.SelectionSet, v []domain.DayGroup) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -3805,7 +4397,54 @@ func (ec *executionContext) marshalOEvent2ᚕᚖgithubᚗcomᚋsomatom98ᚋbadge
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNEvent2ᚖgithubᚗcomᚋsomatom98ᚋbadgesᚋdomainᚐEvent(ctx, sel, v[i])
+			ret[i] = ec.marshalNDayGroup2githubᚗcomᚋsomatom98ᚋbadgesᚋdomainᚐDayGroup(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalOEvent2ᚕgithubᚗcomᚋsomatom98ᚋbadgesᚋdomainᚐEventᚄ(ctx context.Context, sel ast.SelectionSet, v []domain.Event) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNEvent2githubᚗcomᚋsomatom98ᚋbadgesᚋdomainᚐEvent(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -3841,6 +4480,53 @@ func (ec *executionContext) marshalOID2ᚖstring(ctx context.Context, sel ast.Se
 	return res
 }
 
+func (ec *executionContext) marshalOMonthGroup2ᚕgithubᚗcomᚋsomatom98ᚋbadgesᚋdomainᚐMonthGroupᚄ(ctx context.Context, sel ast.SelectionSet, v []domain.MonthGroup) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNMonthGroup2githubᚗcomᚋsomatom98ᚋbadgesᚋdomainᚐMonthGroup(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
 	if v == nil {
 		return nil, nil
@@ -3855,6 +4541,53 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	}
 	res := graphql.MarshalString(*v)
 	return res
+}
+
+func (ec *executionContext) marshalOYearGroup2ᚕgithubᚗcomᚋsomatom98ᚋbadgesᚋdomainᚐYearGroupᚄ(ctx context.Context, sel ast.SelectionSet, v []domain.YearGroup) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNYearGroup2githubᚗcomᚋsomatom98ᚋbadgesᚋdomainᚐYearGroup(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {
