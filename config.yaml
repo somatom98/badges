@@ -8,3 +8,4 @@ mongo:
 kafka:
   brokers: 
     - localhost:9092
+  retries: 3
