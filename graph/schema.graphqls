@@ -5,9 +5,28 @@ type Event {
   date: String!
 }
 
+type DayGroup {
+  day: Int!
+  events: [Event!]
+}
+
+type MonthGroup {
+  month: Int!
+  days: [DayGroup!]
+}
+
+type YearGroup {
+  year: Int!
+  months: [MonthGroup!]
+}
+
+type EventsList {
+  years: [YearGroup!]
+}
+
 type Query {
-  events(id:ID!): [Event!]
-  reportsEvents(mid:ID!): [Event!]
+  events(id:ID!): EventsList!
+  reportsEvents(mid:ID!): EventsList!
 }
 
 input NewEvent {
