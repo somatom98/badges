@@ -39,5 +39,5 @@ type Mutation {
 }
 
 type Subscription {
-  events(id:ID): Event!
+  events(id:ID!): Event!
 }
