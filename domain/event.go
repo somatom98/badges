@@ -38,6 +38,71 @@ type EventsList struct {
 	Years []YearGroup `json:"years"`
 }
 
+func NewEventsList(events []Event) EventsList {
+	eventsList := EventsList{}
+
+	for _, event := range events {
+		year := event.Date.Year()
+		month := int(event.Date.Month())
+		day := event.Date.Day()
+
+		var existingYear *YearGroup
+		for i := range eventsList.Years {
+			if eventsList.Years[i].Year == year {
+				existingYear = &eventsList.Years[i]
+				break
+			}
+		}
+
+		if existingYear == nil {
+			newYear := YearGroup{
+				Year:   year,
+				Months: []MonthGroup{},
+			}
+			existingYear = &newYear
+			eventsList.Years = append(eventsList.Years, newYear)
+		}
+
+		var existingMonth *MonthGroup
+		for i := range existingYear.Months {
+			if existingYear.Months[i].Month == month {
+				existingMonth = &existingYear.Months[i]
+				break
+			}
+		}
+
+		if existingMonth == nil {
+			newMonth := MonthGroup{
+				Month: month,
+				Days:  []DayGroup{},
+			}
+			existingMonth = &newMonth
+			existingYear.Months = append(existingYear.Months, newMonth)
+		}
+
+		var existingDay *DayGroup
+		for i := range existingMonth.Days {
+			if existingMonth.Days[i].Day == day {
+				existingDay = &existingMonth.Days[i]
+				break
+			}
+		}
+
+		if existingDay == nil {
+			newDay := DayGroup{
+				Day:    day,
+				Events: []Event{},
+			}
+			existingDay = &newDay
+			existingMonth.Days = append(existingMonth.Days, newDay)
+		}
+
+		existingDay.Events = append(existingDay.Events, event)
+	}
+
+	return eventsList
+}
+
 type EventRepository interface {
 	GetEventsByUserID(ctx context.Context, uid string) ([]Event, error)
 	GetEventsByUserIDs(ctx context.Context, uids ...string) ([]Event, error)

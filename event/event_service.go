@@ -26,7 +26,7 @@ func (s *EventService) GetEventsByUserID(ctx context.Context, uid string) (domai
 		return domain.EventsList{}, err
 	}
 
-	return eventsList(events), nil
+	return domain.NewEventsList(events), nil
 }
 
 func (s *EventService) GetEventsByManagerID(ctx context.Context, managerID string) (domain.EventsList, error) {
@@ -46,7 +46,7 @@ func (s *EventService) GetEventsByManagerID(ctx context.Context, managerID strin
 		return domain.EventsList{}, err
 	}
 
-	return eventsList(events), nil
+	return domain.NewEventsList(events), nil
 }
 
 func (s *EventService) AddUserEvent(ctx context.Context, event domain.Event) error {
@@ -58,69 +58,4 @@ func (s *EventService) ListenToUserEvents(ctx context.Context) error {
 	groupID := "event-consumer"
 	_, err := s.eventConsumer.Consume(ctx, &groupID, &handler)
 	return err
-}
-
-func eventsList(events []domain.Event) domain.EventsList {
-	eventsList := domain.EventsList{}
-
-	for _, event := range events {
-		year := event.Date.Year()
-		month := int(event.Date.Month())
-		day := event.Date.Day()
-
-		var existingYear *domain.YearGroup
-		for i := range eventsList.Years {
-			if eventsList.Years[i].Year == year {
-				existingYear = &eventsList.Years[i]
-				break
-			}
-		}
-
-		if existingYear == nil {
-			newYear := domain.YearGroup{
-				Year:   year,
-				Months: []domain.MonthGroup{},
-			}
-			existingYear = &newYear
-			eventsList.Years = append(eventsList.Years, newYear)
-		}
-
-		var existingMonth *domain.MonthGroup
-		for i := range existingYear.Months {
-			if existingYear.Months[i].Month == month {
-				existingMonth = &existingYear.Months[i]
-				break
-			}
-		}
-
-		if existingMonth == nil {
-			newMonth := domain.MonthGroup{
-				Month: month,
-				Days:  []domain.DayGroup{},
-			}
-			existingMonth = &newMonth
-			existingYear.Months = append(existingYear.Months, newMonth)
-		}
-
-		var existingDay *domain.DayGroup
-		for i := range existingMonth.Days {
-			if existingMonth.Days[i].Day == day {
-				existingDay = &existingMonth.Days[i]
-				break
-			}
-		}
-
-		if existingDay == nil {
-			newDay := domain.DayGroup{
-				Day:    day,
-				Events: []domain.Event{},
-			}
-			existingDay = &newDay
-			existingMonth.Days = append(existingMonth.Days, newDay)
-		}
-
-		existingDay.Events = append(existingDay.Events, event)
-	}
-
-	return eventsList
 }
