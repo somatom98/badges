@@ -29,15 +29,6 @@ type Query {
   reportsEvents(mid:ID!): EventsList!
 }
 
-input NewEvent {
-  user: String!
-  type: String!
-}
-
-type Mutation {
-  createEvent(input: NewEvent!): Event!
-}
-
 type Subscription {
   events(id:ID!): Event!
 }

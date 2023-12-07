@@ -24,19 +24,6 @@ func (r *eventResolver) Date(ctx context.Context, obj *domain.Event) (string, er
 	return obj.Date.String(), nil
 }
 
-// CreateEvent is the resolver for the createEvent field.
-func (r *mutationResolver) CreateEvent(ctx context.Context, input model.NewEvent) (*domain.Event, error) {
-	event := domain.Event{
-		ID:   uuid.New().String(),
-		UID:  input.User,
-		Type: input.Type,
-		Date: time.Now().UTC(),
-	}
-
-	err := r.EventService.AddUserEvent(ctx, event)
-	return &event, err
-}
-
 // Events is the resolver for the events field.
 func (r *queryResolver) Events(ctx context.Context, id string) (*domain.EventsList, error) {
 	events, err := r.EventService.GetEventsByUserID(ctx, id)
@@ -83,7 +70,36 @@ func (r *subscriptionResolver) Events(ctx context.Context, id string) (<-chan *d
 	return out, nil
 }
 
-// Type is the resolver for the type field.
+// Event returns EventResolver implementation.
+func (r *Resolver) Event() EventResolver { return &eventResolver{r} }
+
+// Query returns QueryResolver implementation.
+func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
+
+// Subscription returns SubscriptionResolver implementation.
+func (r *Resolver) Subscription() SubscriptionResolver { return &subscriptionResolver{r} }
+
+type eventResolver struct{ *Resolver }
+type queryResolver struct{ *Resolver }
+type subscriptionResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//     it when you're done.
+//   - You have helper methods in this file. Move them out to keep these resolver files clean.
+func (r *mutationResolver) CreateEvent(ctx context.Context, input model.NewEvent) (*domain.Event, error) {
+	event := domain.Event{
+		ID:   uuid.New().String(),
+		UID:  input.User,
+		Type: input.Type,
+		Date: time.Now().UTC(),
+	}
+
+	err := r.EventService.AddUserEvent(ctx, event)
+	return &event, err
+}
 func (r *newEventResolver) Type(ctx context.Context, obj *model.NewEvent, data string) error {
 	switch data {
 	case string(domain.EventTypeIn):
@@ -96,24 +112,8 @@ func (r *newEventResolver) Type(ctx context.Context, obj *model.NewEvent, data s
 
 	return nil
 }
-
-// Event returns EventResolver implementation.
-func (r *Resolver) Event() EventResolver { return &eventResolver{r} }
-
-// Mutation returns MutationResolver implementation.
 func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
-
-// Query returns QueryResolver implementation.
-func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
-
-// Subscription returns SubscriptionResolver implementation.
-func (r *Resolver) Subscription() SubscriptionResolver { return &subscriptionResolver{r} }
-
-// NewEvent returns NewEventResolver implementation.
 func (r *Resolver) NewEvent() NewEventResolver { return &newEventResolver{r} }
 
-type eventResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
-type queryResolver struct{ *Resolver }
-type subscriptionResolver struct{ *Resolver }
 type newEventResolver struct{ *Resolver }
