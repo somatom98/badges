@@ -83,7 +83,7 @@ type ComplexityRoot struct {
 	}
 
 	Subscription struct {
-		Events func(childComplexity int, id *string) int
+		Events func(childComplexity int, id string) int
 	}
 
 	YearGroup struct {
@@ -104,7 +104,7 @@ type QueryResolver interface {
 	ReportsEvents(ctx context.Context, mid string) (*domain.EventsList, error)
 }
 type SubscriptionResolver interface {
-	Events(ctx context.Context, id *string) (<-chan *domain.Event, error)
+	Events(ctx context.Context, id string) (<-chan *domain.Event, error)
 }
 
 type NewEventResolver interface {
@@ -239,7 +239,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Subscription.Events(childComplexity, args["id"].(*string)), true
+		return e.complexity.Subscription.Events(childComplexity, args["id"].(string)), true
 
 	case "YearGroup.months":
 		if e.complexity.YearGroup.Months == nil {
@@ -460,10 +460,10 @@ func (ec *executionContext) field_Query_reportsEvents_args(ctx context.Context, 
 func (ec *executionContext) field_Subscription_events_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *string
+	var arg0 string
 	if tmp, ok := rawArgs["id"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalOID2ᚖstring(ctx, tmp)
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1245,7 +1245,7 @@ func (ec *executionContext) _Subscription_events(ctx context.Context, field grap
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Subscription().Events(rctx, fc.Args["id"].(*string))
+		return ec.resolvers.Subscription().Events(rctx, fc.Args["id"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4462,22 +4462,6 @@ func (ec *executionContext) marshalOEvent2ᚕgithubᚗcomᚋsomatom98ᚋbadges�
 	}
 
 	return ret
-}
-
-func (ec *executionContext) unmarshalOID2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := graphql.UnmarshalID(v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOID2ᚖstring(ctx context.Context, sel ast.SelectionSet, v *string) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	res := graphql.MarshalID(*v)
-	return res
 }
 
 func (ec *executionContext) marshalOMonthGroup2ᚕgithubᚗcomᚋsomatom98ᚋbadgesᚋdomainᚐMonthGroupᚄ(ctx context.Context, sel ast.SelectionSet, v []domain.MonthGroup) graphql.Marshaler {
